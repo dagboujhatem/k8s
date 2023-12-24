@@ -77,37 +77,37 @@ To romove the Role Binding, just execute the following command line:
 
 Based on [this tutorial](https://help.ovhcloud.com/csm/en-gb-public-cloud-kubernetes-deploy-application?id=kb_article_view&sysparm_article=KB0049713), we can deploy our first application in Kubernetes.
 
-### Step 0 - Create your first namespace 
+### Step 0 - Create your first namespace:
 
         kubectl create ns hello-app --kubeconfig=./config.yml
 
-### Step 1 - Deploy your first application 
+### Step 1 - Deploy your first application:
 
         kubectl apply -f hello.yml -n hello-app --kubeconfig=./config.yml
 
-### Step 2 - List the pods
+### Step 2 - List the pods:
 
         kubectl get pods -n hello-app -l app=hello-world --kubeconfig=./config.yml
 
-### Step 3 - List the deployments
+### Step 3 - List the deployments:
 
         kubectl get deploy -n hello-app -l app=hello-world --kubeconfig=./config.yml
 
-### Step 4 - List the services
+### Step 4 - List the services:
 
         kubectl get services -n hello-app -l app=hello-world --kubeconfig=./config.yml
 
-### Step 5 - List the services
+### Step 5 - Describe all services:
 
         kubectl describe service --kubeconfig=./config.yml
 
-### Step 6 - Test your service
+### Step 6 - Test your service:
 
     export SERVICE_URL=$(kubectl get svc -n hello-app -l app=hello-world --kubeconfig=./config.yml -o jsonpath='{.status.loadBalancer.ingress[].ip}')
 
-__Notes:__ If this way not work for you, please go to load balancer in OVH dashboard to get the ip adress.
+__Notes:__ If this way not work for you, please go to load balancer in OVH dashboard to get the IP address.
 
-### Step 7 - Clean up
+### Step 7 - Clean up:
 
     kubectl delete ns hello-app --kubeconfig=./config.yml
 

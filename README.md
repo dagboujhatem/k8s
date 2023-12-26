@@ -25,7 +25,11 @@ In this section we present the basic commands for managing our k8s cluster.
 
         kubectl describe svc CLUSTER_NAME --kubeconfig=./config.yml
 
-- Get cluster nodes:
+- Get all namespaces in the cluster k8s:
+
+        kubectl get namespaces --kubeconfig=./config.yml
+
+- Get all cluster nodes:
 
         kubectl get nodes --kubeconfig=./config.yml
 
@@ -65,7 +69,15 @@ Based on [this tutorial](https://help.ovhcloud.com/csm/en-gb-public-cloud-kubern
 
 - Step 4 - Get Bearer Token: 
 
+Now we need to find token we can use to log in. Execute following command:
+
+For Bash:
+
         kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret --kubeconfig=./config.yml | grep admin-user-token | awk '{print $1}') --kubeconfig=./config.yml
+
+For Powershell (To verfiy):
+
+        kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | sls admin-user --kubeconfig=./config.yml | ForEach-Object { $_ -Split '\s+' } | Select -First 1) --kubeconfig=./config.yml
 
 ### Access the Dashboard: 
  
@@ -135,6 +147,10 @@ You also need to have Helm installer on your workstation and your cluster,  plea
 
 This will install your Jenkins master.
 
+Use the following command if you want verify the list of installation: 
+
+        helm repo list
+
 ### Step 2 - Get the LoadBalancer URL: 
 
 As the instructions say, you will need to wait a few moments to get the LoadBalancer URL. You can test if the LoadBalancer is ready using:
@@ -161,3 +177,73 @@ __Note:__ The username is __user__.
 To clean up your cluster, simply use Helm to delete your Jenkins release.
 
     helm delete jenkins --kubeconfig=./config.yml
+
+
+## 6. Install & deploy the Ingress Controller with OVH Cloud:
+
+Based on [this tutorial](https://help.ovhcloud.com/csm/fr-public-cloud-kubernetes-install-nginx-ingress?id=kb_article_view&sysparm_article=KB0055171), we can install & deploy the ingress controller with OVH Cloud.
+
+You can learn more in [this Helm](https://kubernetes.github.io/ingress-nginx/deploy/#ovhcloud) package.
+
+###  Before you begin: 
+
+This tutorial presupposes that you already have a working OVHcloud Managed Kubernetes cluster.
+
+You also need to have Helm installer on your workstation and your cluster,  please refer to [this link](https://github.com/helm/helm/releases) to install Helm and you don't forget to add it to environnement variables.
+
+### Let's define Ingress Resource: 
+
+In Kubernetes, an Ingress resource allows you to access to your Services from outside the cluster. The goal is to avoid creating a Load Balancer per Service but only one per Ingress.
+
+![Nginx Ingress Controller](https://help.ovhcloud.com/public_cloud-containers_orchestration-managed_kubernetes-installing-nginx-ingress-images-ingress.png)
+
+
+### Step 1 - Install Ingress Nginx Ingress Controller with Helm:
+
+- __First way : using Helm:__
+
+If you have Helm installed, you can run the folloming command to install it: 
+
+        helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+
+Use the following command if you want verify the list of installation: 
+
+        helm repo list
+
+Use the following command if you want update all Helm package: 
+
+        helm repo update
+
+Use the following command if you want install the Helm package:
+
+        helm -n ingress-nginx install ingress-nginx ingress-nginx/ingress-nginx --create-namespace  --kubeconfig=./config.yml
+
+- __Second way : using kubectl:__
+
+If you don't have Helm or if you prefer to use a YAML manifest, you can run the following command instead:
+
+       kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml --kubeconfig=./config.yml
+
+### Step 2 - Online testing:
+
+As the instructions say, you will need to wait a few moments to get the LoadBalancer URL. You can test if the LoadBalancer is ready using:
+
+    kubectl get service ingress-nginx-controller --namespace=ingress-nginx --kubeconfig=./config.yml
+
+The URL under __EXTERNAL-IP__ is your nginx-ingress URL. You can then access your nginx-ingress at http://[__EXTERNAL-IP__] via HTTP or https://[__EXTERNAL-IP__] via HTTPS.
+
+### Step 3 - Alternative to get nginx-ingress URL :
+
+Enter the following command to retrieve it:
+
+        kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[].ip}' --kubeconfig=./config.yml
+
+### Step 4 - Cleaning up:
+
+- __First way : using Helm:__
+       
+       helm delete ingress-nginx --kubeconfig=./config.yml
+
+- __Second way : using kubectl:__
+
+       kubectl delete ns ingress-nginx  --kubeconfig=./config.yml

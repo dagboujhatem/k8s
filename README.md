@@ -14,9 +14,16 @@ In this section we present the basic commands for managing our k8s cluster.
 
         kubectl version --client
 
-- Get cluster info:
+- Get cluster infos (like: CoreDNS, proxy):
 
         kubectl cluster-info --kubeconfig=./config.yml
+
+- Get clusters infos (like: Name, Type, IP, Port):
+
+        kubectl get svc --kubeconfig=./config.yml
+- Get cluster details (like: Name, Type, IP, Port):
+
+        kubectl describe svc CLUSTER_NAME --kubeconfig=./config.yml
 
 - Get cluster nodes:
 
@@ -111,3 +118,46 @@ __Notes:__ If this way not work for you, please go to load balancer in OVH dashb
 
     kubectl delete ns hello-app --kubeconfig=./config.yml
 
+
+
+## 5. Install & deploy Jenkins with k8s:
+
+Based on [this tutorial](https://help.ovhcloud.com/csm/en-public-cloud-kubernetes-install-jenkins?id=kb_article_view&sysparm_article=KB0049821), we can install & deploy Jenkins in Kubernetes.
+
+###  Before you begin: 
+
+This tutorial presupposes that you already have a working OVHcloud Managed Kubernetes cluster.
+
+You also need to have Helm installer on your workstation and your cluster,  please refer to [this link](https://github.com/helm/helm/releases) to install Helm and you don't forget to add it to environnement variables.
+
+### Step 1 - Installing the Jenkins Helm chart: 
+    helm install jenkins bitnami/jenkins --version 12.4.8 --kubeconfig=./config.yml
+
+This will install your Jenkins master.
+
+### Step 2 - Get the LoadBalancer URL: 
+
+As the instructions say, you will need to wait a few moments to get the LoadBalancer URL. You can test if the LoadBalancer is ready using:
+
+    kubectl get svc --namespace default -w jenkins --kubeconfig=./config.yml
+
+The URL under __EXTERNAL-IP__ is your Jenkins URL. You can the follow the instructions on the Helm Chart to get the connection parameters.
+
+### Step 3 - Get the connection parameters: 
+
+Use the following command to get the password from the secret jenkins: 
+
+    kubectl get secret --namespace default jenkins -o jsonpath="{.data.jenkins-password}" --kubeconfig=./config.yml | base64 --decode 
+
+You can also, use the __-d__ flag to decode the value of secret, like the following command: 
+
+    kubectl get secret --namespace default jenkins -o jsonpath="{.data.jenkins-password}" --kubeconfig=./config.yml | base64 -d
+
+__Note:__ The username is __user__.
+
+
+### Step 4 - Cleaning up:
+
+To clean up your cluster, simply use Helm to delete your Jenkins release.
+
+    helm delete jenkins --kubeconfig=./config.yml

@@ -142,7 +142,7 @@ This tutorial presupposes that you already have a working OVHcloud Managed Kuber
 
 You also need to have Helm installer on your workstation and your cluster,  please refer to [this link](https://github.com/helm/helm/releases) to install Helm and you don't forget to add it to environnement variables.
 
-### Step 1 - Installing the Jenkins Helm chart: 
+### Step 1 - Installing the  Helm chart: Jenkins
     helm install jenkins bitnami/jenkins --version 12.4.8 --kubeconfig=./config.yml
 
 This will install your Jenkins master.
@@ -197,12 +197,16 @@ In Kubernetes, an Ingress resource allows you to access to your Services from ou
 
 ![Nginx Ingress Controller](https://help.ovhcloud.com/public_cloud-containers_orchestration-managed_kubernetes-installing-nginx-ingress-images-ingress.png)
 
+In other hand, you can see this exemple: 
+
+![Nginx Ingress Controller Exemple](https://miro.medium.com/v2/resize:fit:828/format:webp/1*wYyLjUoVuTkTLTeSBVzuYA.jpeg)
+
 
 ### Step 1 - Install Ingress Nginx Ingress Controller with Helm:
 
 - __First way : using Helm:__
 
-If you have Helm installed, you can run the folloming command to install it: 
+If you have Helm installed, you can run the following command to get the repo in my cluster: 
 
         helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 
@@ -247,3 +251,18 @@ Enter the following command to retrieve it:
 - __Second way : using kubectl:__
 
        kubectl delete ns ingress-nginx  --kubeconfig=./config.yml
+
+
+### Step 5 - Create our ingress:
+
+Use the following command to create a new ingress: 
+
+        kubectl apply -f k8s-dashboard.yml --kubeconfig=./config.yml
+
+Use the following command to list all ingress: 
+        
+        kubectl get ingress --kubeconfig=./config.yml
+
+Use the following command to delete an ingress: 
+
+        kubectl delete -f k8s-dashboard.yml --kubeconfig=./config.yml
